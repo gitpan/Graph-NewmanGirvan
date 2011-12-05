@@ -1,8 +1,9 @@
 package Graph::NewmanGirvan;
 
-use 5.012000;
+use 5.010000;
 use strict;
 use warnings;
+use List::Util 'sum';
 
 require Exporter;
 
@@ -19,7 +20,7 @@ our @EXPORT = qw(
 	
 );
 
-our $VERSION = '0.2';
+our $VERSION = '0.3';
 
 require XSLoader;
 XSLoader::load('Graph::NewmanGirvan', $VERSION);
@@ -27,7 +28,19 @@ XSLoader::load('Graph::NewmanGirvan', $VERSION);
 sub newman_girvan {
   my $g = shift;
   my $p = Graph::NewmanGirvan->new;
-  $p->add_edge(@$_, ($g->get_edge_weight(@$_) // 1.0)) for $g->edges;
+  my %default_weight;
+
+  for ($g->edges) {
+    my ($src, $dst) = @$_;
+    my $weight = $g->get_edge_weight($src, $dst) // 1.0;
+    $p->add_edge($src, $dst, $weight);
+    $default_weight{$src} += $weight;
+    $default_weight{$dst} += $weight;
+  }
+  foreach my $vertex ($g->vertices) {
+    my $weight = $g->get_vertex_weight($vertex) // $default_weight{$vertex};
+    $p->set_vertex_weight($vertex, $weight);
+  }
   return $p->compute;
 }
 
@@ -65,7 +78,8 @@ with graphs with edges with edge weights greater than zero. Should work
 with directed and undirected graphs. The function C<newman_girvan_r>
 is a convenience wrapper for C<newman_girvan> that returns a hash with
 the cluster identifiers as keys and array references of vertices as
-values.
+values. The vertex weight of each vertex defaults to sum of the weights
+of the edges leaving or entering the vertex.
 
 =head2 EXPORTS
 

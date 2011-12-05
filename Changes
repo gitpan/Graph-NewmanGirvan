@@ -1,5 +1,9 @@
 Revision history for Perl extension Graph::NewmanGirvan.
 
+v0.3 December 2011
+  - couple of changes to make g++ happier
+  - respect caller-defined vertex weights
+
 v0.2 December 2011
   - added newman_girvan_r
 

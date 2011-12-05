@@ -12,6 +12,7 @@
 #include <sstream>
 #include <fstream>
 #include <vector>
+#include <limits>
 
 extern "C"
 {
@@ -26,9 +27,9 @@ class node {
 public:
   node() : name(-1), weight(0) {
   }
-  node(const long aName, const double aWeight) : weight(aWeight), name(aName) {
+  node(long aName, double aWeight) : weight(aWeight), name(aName) {
   }
-  node(std::map< std::string, long>& string_map, const std::string aName, const double aWeight)
+  node(std::map< std::string, long>& string_map, std::string aName, double aWeight)
     : weight(aWeight) {
     if (string_map.find(aName) != string_map.end()) {
       name = string_map.find(aName)->second;
@@ -38,7 +39,7 @@ public:
     }
   }
   long name;
-  const double weight;
+  double weight;
   int operator==(const node& right) const {
     return name == right.name;
   }
@@ -49,12 +50,12 @@ public:
 
 class edge {
 public:
-  edge(const node aSrc, const node aDst, const double aWeight)
+  edge(node aSrc, node aDst, double aWeight)
     : src(aSrc), dst(aDst), weight(aWeight) {
   }
-  const class node src;
-  const class node dst;
-  const double weight;
+  class node src;
+  class node dst;
+  double weight;
   int operator==(const edge& right) const {
     return src == right.src && dst == right.dst && weight == right.weight;
   }
@@ -64,6 +65,7 @@ class NewmanGirvan {
 public:
   std::map< std::string, long> string_map;
   std::map< std::string, node > nameToNode;
+  std::map< long, double > nameToWeight;
   std::map< node, std::string > nodeToName;
   std::map< std::pair< node, node >, double> edgeToWeight;
   std::map< std::pair< node, node >, double>::iterator edgeToWeight_iter;
@@ -85,6 +87,10 @@ public:
     ));
   }
 
+  void set_vertex_weight(std::string vertex, double weight) {
+    nameToWeight[ string_map[vertex] ] = weight;
+  }
+
   std::map<std::string, int> run() {
     std::list< edge > edges;
     for (edgeToWeight_iter = edgeToWeight.begin(); edgeToWeight_iter != edgeToWeight.end(); ++edgeToWeight_iter) {
@@ -101,11 +107,6 @@ public:
       edges.push_back(createEdge(src, dst, weight + revWeight));
     }
 
-    std::map<long, double> nameToWeight;
-
-    for (std::list< edge >::const_iterator i = edges.begin(); i != edges.end(); ++i) {
-      nameToWeight[ i->src.name ] += i->weight;
-    }
     std::list<edge> edges2;
     for (std::list< edge >::iterator i = edges.begin(); i != edges.end(); ++i) {
       edges2.push_back(createEdge(createNode(i->src.name, nameToWeight[ i->src.name ]),
@@ -129,13 +130,13 @@ public:
     return result;
   }
 
-  node createNode(const long aName, const double aWeight) {
+  node createNode(long aName, double aWeight) {
     return node(aName, aWeight);
   }
-  node createNode(const std::string aName, const double aWeight) {
+  node createNode(std::string aName, double aWeight) {
     return node(string_map, aName, aWeight);
   }
-  edge createEdge(const node aSrc, const node aDst, const double aWeight) {
+  edge createEdge(node aSrc, node aDst, double aWeight) {
     return edge(aSrc, aDst, aWeight);
   }
   void refine(std::map<node, int> nodeToCluster, std::map< node, std::list<edge> > nodeToEdges, double atedges, double atpairs);
@@ -377,6 +378,9 @@ NewmanGirvan::new()
 
 void
 NewmanGirvan::add_edge(const char* src, const char* dst, double weight)
+
+void
+NewmanGirvan::set_vertex_weight(const char* vertex, double weight)
 
 void
 NewmanGirvan::compute()

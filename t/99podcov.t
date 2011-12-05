@@ -10,5 +10,5 @@ eval "use Test::Pod::Coverage";
 plan skip_all => "Test::Pod::Coverage required for testing pod coverage" if $@;
 plan tests => 1;
 pod_coverage_ok('Graph::NewmanGirvan',
-  { trustme => [qr/^(add_edge|compute|new|newman_girvan|newman_girvan_r)$/] } );
+  { trustme => [qr/^(set_vertex_weight|add_edge|compute|new|newman_girvan|newman_girvan_r)$/] } );
 
